@@ -1,0 +1,36 @@
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
+vim.g.have_nerd_font = true
+
+local opt = vim.opt
+-- opt.number = true
+-- opt.relativenumber = true
+opt.mouse = 'a'
+opt.showmode = true
+opt.clipboard = 'unnamedplus'
+opt.breakindent = true
+opt.undofile = true
+opt.ignorecase = true
+opt.smartcase = true
+opt.signcolumn = 'no'
+opt.updatetime = 250
+opt.timeoutlen = 300
+opt.ttimeoutlen = 0
+opt.splitright = true
+opt.splitbelow = true
+opt.inccommand = 'split'
+opt.cursorline = false
+opt.scrolloff = 8
+opt.confirm = false
+opt.showtabline = 0
+opt.laststatus = 2
+opt.ch = 0
+opt.lazyredraw = true
+opt.guicursor = 'a:block'
+opt.termguicolors = true
+opt.incsearch = true
+opt.swapfile = false
+opt.backup = false
+opt.fillchars = { eob = ' ' }
+opt.ruler = false
+opt.showcmd = true

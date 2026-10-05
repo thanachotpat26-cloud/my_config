@@ -1,0 +1,28 @@
+format = """
+$character\
+$directory\
+$git_branch\
+$python\
+"""
+
+[cmd_duration]
+disabled = true
+
+[directory]
+style = "fg:#88c0d0"
+format = "[$path]($style) "
+truncation_length = 1
+
+[git_branch]
+symbol = " "
+style = "fg:#bf616a"
+format = "$symbol[\\[$branch\\]]($style) "
+
+[python]
+symbol = " "
+style = "fg:#ebcb8b"
+format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+
+[character]
+success_symbol = "[❯](fg:#ebcb8b)"
+error_symbol = "[❯](fg:#bf616a)"

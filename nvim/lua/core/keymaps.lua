@@ -1,0 +1,46 @@
+local map = vim.keymap.set
+map('n', '<Esc>', '<cmd>nohlsearch<CR>')
+map('n', '<leader>q', function()
+  vim.diagnostic.setloclist()
+end, { desc = 'Open diagnostic [Q]uickfix list' })
+map('t', '<Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+map('i', 'jk', '<Esc>', { desc = 'Escape to normal mode' })
+map('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to left' })
+map('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to right' })
+map('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to lower' })
+map('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to upper' })
+map('v', 'J', ":m '>+1<CR>gv=gv")
+map('v', 'K', ":m '<-2<CR>gv=gv")
+map('t', '<C-h>', [[<C-\><C-n><C-w>h]])
+map('t', '<C-j>', [[<C-\><C-n><C-w>j]])
+map('t', '<C-k>', [[<C-\><C-n><C-w>k]])
+map('t', '<C-l>', [[<C-\><C-n><C-w>l]])
+map('n', '<leader>v', ':vsplit<CR>', { desc = 'Split Vertical' })
+map('n', 'L', ':bnext<CR>', { desc = 'Next buffer' })
+map('n', 'H', ':bprevious<CR>', { desc = 'Previous buffer' })
+map('n', '<leader>wh', '<C-w>H', { desc = 'Move window far left' })
+map('n', '<leader>wj', '<C-w>J', { desc = 'Move window far down' })
+map('n', '<leader>wk', '<C-w>K', { desc = 'Move window far up' })
+map('n', '<leader>wl', '<C-w>L', { desc = 'Move window far right' })
+map('n', '<M-left>', ':vertical resize -2<CR>')
+map('n', '<M-right>', ':vertical resize +2<CR>')
+map('n', '<M-up>', ':resize -2<CR>')
+map('n', '<M-down>', ':resize +2<CR>')
+map('n', 'J', "mzJ'z")
+map('n', '<C-n>', '<C-d>zz')
+map('n', '<C-u>', '<C-u>zz')
+map('n', 'n', 'nzzzv')
+map('n', 'N', 'Nzzzv')
+map('n', '<leader>fg', '<cmd>Telescope git_files<cr>', { desc = 'Find Git Files' })
+
+map('n', ';', '%', { desc = 'Jump to matching bracket/string' })
+
+-- file explorer (oil.nvim); oil also takes over `:edit .` on its own
+map('n', '<leader>e', function()
+  if vim.bo.filetype == 'oil' then
+    require('oil').close() -- restores the buffer from before oil was opened
+  else
+    require('oil').open()
+  end
+end, { desc = 'Toggle file explorer' })
+map('n', '-', '<cmd>Oil<cr>', { desc = 'Open parent directory' })

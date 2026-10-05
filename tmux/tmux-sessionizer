@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+
+# tmux-sessionizer — switch to or create tmux sessions via fzf
+
+SEARCH_DIRS=(
+  "$HOME"
+)
+
+session_name() {
+  local name
+  name="$(basename "$(dirname "$1")")/$(basename "$1")"
+  name="${name#./}"
+  echo "${name//\//-}" | tr ' .' '__'
+}
+
+has_session() { tmux has-session -t "$1" 2>/dev/null; }
+
+find_dirs() {
+  if command -v zoxide &>/dev/null; then
+    zoxide query -l 2>/dev/null
+  fi
+  find "${SEARCH_DIRS[@]}" -mindepth 1 -maxdepth 4 -type d \
+    -not -path '*/\..*' \
+    -not -path '*/node_modules/*' \
+    -not -path '*/target/*' \
+    -not -path '*/\.cache/*' \
+    -not -path '*/\.local/*' \
+    -not -path '*/\.config/*' \
+    -not -path '*/snap/*' \
+    -not -path '*/.venv/*' \
+    -not -path '*/__pycache__/*' \
+    2>/dev/null
+}
+
+fzf_preview() {
+  local dir="$1"
+  local git_info="" info
+  if info=$(cd "$dir" && git branch --show-current 2>/dev/null); then
+    git_info="git: $info"
+  fi
+  local sessions
+  sessions=$(tmux ls 2>/dev/null | grep -c "$(basename "$dir")" || true)
+  echo "$git_info"
+  echo "---"
+  ls -1 "$dir" 2>/dev/null | head -30
+}
+
+goto_session() {
+  local selected="$1"
+  [[ -z "$selected" ]] && exit 0
+
+  local name
+  name=$(session_name "$selected")
+
+  if ! has_session "$name"; then
+    tmux new-session -ds "$name" -c "$selected"
+  fi
+
+  if [[ -n $TMUX ]]; then
+    tmux switch-client -t "$name"
+  else
+    tmux attach-session -t "$name"
+  fi
+}
+
+kill_session() {
+  local selected="$1"
+  [[ -z "$selected" ]] && exit 0
+  local name
+  name=$(session_name "$selected")
+  if has_session "$name"; then
+    tmux kill-session -t "$name"
+  fi
+}
+
+switch_session() {
+  local sessions
+  sessions=$(tmux ls -F "#{session_name}" 2>/dev/null)
+  [[ -z "$sessions" ]] && echo "no sessions" && exit 0
+
+  local chosen
+  chosen=$(echo "$sessions" | fzf --height 40% --reverse --border \
+    --prompt="switch > " \
+    --preview 'tmux capture-pane -t {} -p -S -20 2>/dev/null || true' \
+    --preview-window=right:50%:wrap)
+  [[ -z "$chosen" ]] && exit 0
+
+  if [[ -n $TMUX ]]; then
+    tmux switch-client -t "$chosen"
+  else
+    tmux attach-session -t "$chosen"
+  fi
+}
+
+if [[ "${1:-}" == "switch" ]]; then
+  switch_session
+  exit 0
+fi
+
+if [[ "${1:-}" == "kill" ]]; then
+  selected=$(find_dirs | sort -u | fzf --height 40% --reverse --border \
+    --prompt="kill > " \
+    --preview 'tmux capture-pane -t $(basename "$(dirname {})")/$(basename {}) 2>/dev/null || echo "not active"' \
+    --preview-window=right:50%:wrap)
+  kill_session "$selected"
+  exit 0
+fi
+
+selected=$(find_dirs | sort -u | fzf --height 40% --reverse --border \
+  --prompt="session > " \
+  --preview 'dir={}; git="$(cd "$dir" 2>/dev/null && git branch --show-current 2>/dev/null)"; [ -n "$git" ] && echo "git: $git"; echo "---"; ls -1 "$dir" 2>/dev/null | head -30' \
+  --preview-window=right:40% \
+  --bind 'ctrl-s:execute(echo {} | head -1)+abort' \
+  --bind 'ctrl-k:execute(echo {} | head -1)+abort')
+
+[[ -z "$selected" ]] && exit 0
+
+goto_session "$selected"
