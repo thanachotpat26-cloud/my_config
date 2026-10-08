@@ -40,9 +40,5 @@ require('lazy').setup({
     },
   },
 })
-
--- Neovim maps .ino to the `arduino` filetype, which is not in clangd's filetypes
--- list, so no client ever attached to Arduino sketches -- LSP worked in .cpp/.h
--- and was silently dead in .ino. Sketch files are plain C++.
 vim.filetype.add { extension = { urdf = 'xml', xacro = 'xml', ino = 'cpp' } }
 vim.cmd.colorscheme 'rose-pine-moon'

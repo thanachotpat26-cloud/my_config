@@ -7,9 +7,6 @@ return {
   keys = { { ',v', '<cmd>VenvSelect<cr>' } }, -- Open picker on keymap
   opts = {
     options = {
-      -- Ubuntu's fd-find package installs the `fd` binary as `fdfind`.
-      -- Without this, venv-selector errors on every Python file open and
-      -- aborts the FileType autocmd chain (breaking treesitter startup).
       fd_binary_name = 'fdfind',
     }, -- plugin-wide options
     search = {}, -- custom search definitions

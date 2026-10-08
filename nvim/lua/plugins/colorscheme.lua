@@ -8,7 +8,6 @@ return {
         variant = 'auto',
         dark_variant = 'main',
         styles = {
-          -- Disable global bold and italic styling
           bold = false,
           italic = false,
           transparency = true,
