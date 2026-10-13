@@ -49,8 +49,6 @@ return {
 
           local client = vim.lsp.get_client_by_id(event.data.client_id)
           if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
-            -- A buffer can collect a second client later; clear first so the
-            -- CursorHold handler is not registered twice.
             vim.api.nvim_clear_autocmds { group = highlight_group, buffer = event.buf }
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
@@ -73,13 +71,9 @@ return {
         end,
       })
 
-      -- Registered once, globally: the handler reads event.buf itself, so there
-      -- is no reason to create a fresh LspDetach autocmd on every attach.
       vim.api.nvim_create_autocmd('LspDetach', {
         group = detach_group,
         callback = function(event)
-          -- vim.lsp.buf.clear_references() ignores arguments and clears the current
-          -- buffer; detaching a background buffer would strand its highlights.
           vim.lsp.util.buf_clear_references(event.buf)
           vim.api.nvim_clear_autocmds { group = highlight_group, buffer = event.buf }
         end,
@@ -103,7 +97,6 @@ return {
         },
       }
 
-      -- PlatformIO query-driver configuration for clangd
       local packages_dir = vim.fn.expand '~/.platformio/packages'
       local pio_drivers = {}
       for _, driver in ipairs { '*-gcc', '*-g++' } do
@@ -113,20 +106,12 @@ return {
       local clangd_cmd = {
         'clangd',
         '--header-insertion=never',
-        -- ESP-IDF/Arduino headers are re-parsed on nearly every edit; keeping the
-        -- PCH in RAM costs memory but skips the disk round-trip each time.
         '--pch-storage=memory',
-        -- Background indexing otherwise runs at editor priority and stutters the
-        -- UI while it works through a framework tree.
         '--background-index-priority=low',
       }
       if #pio_drivers > 0 then
         clangd_cmd[#clangd_cmd + 1] = '--query-driver=' .. table.concat(pio_drivers, ',')
       end
-
-      -- blink's capabilities include Neovim's own defaults. The wildcard reaches
-      -- every server mason-lspconfig's automatic_enable starts -- including the
-      -- ones with no entry in `servers` (rust_analyzer, bashls, lemminx).
       vim.lsp.config('*', { capabilities = require('blink.cmp').get_lsp_capabilities() })
 
       local servers = {
@@ -140,10 +125,6 @@ return {
               analysis = {
                 autoImportCompletions = false,
                 autoSearchPaths = true,
-                useLibraryCodeForTypes = true,
-                -- 'workspace' makes pyright parse every .py file under the root on
-                -- attach (build/install trees included). Errors are only read in
-                -- buffers that are open anyway.
                 diagnosticMode = 'openFilesOnly',
               },
             },
@@ -153,26 +134,18 @@ return {
           settings = {
             Lua = {
               completion = { callSnippet = 'Replace' },
-              -- Stops lua_ls re-offering to import third-party libraries (and
-              -- re-indexing them) every time a buffer opens in a new project.
               workspace = { checkThirdParty = false },
             },
           },
         },
       }
 
-      -- Register only; enabling/starting is left to mason-lspconfig's
-      -- automatic_enable, so a server is never started twice with two configs.
-      -- The call form merges -- `vim.lsp.config[name] = server` replaces.
       for name, server in pairs(servers) do
         vim.lsp.config(name, server)
       end
 
       require('mason-lspconfig').setup {}
 
-      -- mason is the only installer in this config, so the formatters are listed
-      -- here too. Two package names differ from their lspconfig name; everything
-      -- else it skips silently, so there is no is_installed() bookkeeping.
       require('mason-tool-installer').setup {
         ensure_installed = { 'clangd', 'pyright', 'rust-analyzer', 'lua-language-server', 'stylua', 'clang-format' },
         run_on_start = true,

@@ -11,8 +11,6 @@ return {
     vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'InsertLeave' }, {
       group = lint_augroup,
       callback = function()
-        -- Only run the linter in buffers that can be modified to avoid noise
-        -- in LSP popups that render Markdown.
         if vim.bo.modifiable then
           lint.try_lint()
         end
