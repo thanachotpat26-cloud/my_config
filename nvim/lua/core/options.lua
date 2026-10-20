@@ -3,7 +3,7 @@ vim.g.maplocalleader = ' '
 
 local opt = vim.opt
 vim.opt.clipboard = 'unnamedplus'
-opt.number = true
+opt.number = false
 opt.mouse = 'a'
 opt.showmode = true
 opt.undofile = true
@@ -13,7 +13,7 @@ opt.scrolloff = 8
 opt.confirm = false
 opt.guicursor = ''
 opt.incsearch = true
--- opt.fillchars = { eob = ' ' }
+opt.fillchars = { eob = ' ' }
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 4
